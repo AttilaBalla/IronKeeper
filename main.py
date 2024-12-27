@@ -23,10 +23,10 @@ def init():
     time_keeper = TimeKeeper()
     bot_config = BotConfig()
 
-    async def dispatch_spawn_notification(ctx, boss, time, territory):
-        print(f'dispatch set for {boss} in {time / 60} minutes')
+    async def dispatch_spawn_notification(ctx, timer, time):
+        print(f'dispatch set for {timer.name} in {time / 60} minutes')
         await asyncio.sleep(time)
-        bot.dispatch('notify_spawn', ctx, boss, territory)
+        bot.dispatch('notify_spawn', ctx, timer)
 
 
     # todo designate a channel to output information to
@@ -44,7 +44,7 @@ def init():
 
     # register and start a new timer
     @bot.command()
-    async def t(ctx, key, territory: typing.Optional[str] = ''):
+    async def t(ctx, key, territory: typing.Optional[str] = '', offset: typing.Optional[int] = 0):
         boss = find_boss(key)
 
         if boss is None:
@@ -57,18 +57,32 @@ def init():
             await ctx.send('You need to specify ANI or BCU side for that boss!')
             return
 
+        if offset and offset > boss['time'] - 1:
+            await ctx.send('That offset is too large and would make no sense!')
+            return
+
         is_duplicate = time_keeper.check_duplicate(boss, territory)
 
         if is_duplicate:
             await ctx.send(f"There is already a timer running for that boss!")
         else:
-            timer = BossTimer(boss, territory)
+            timer = BossTimer(boss, territory, offset)
             time_keeper.add_timer(timer)
             await ctx.send(output_timer_data(timer))
-            await dispatch_spawn_notification(ctx, boss, boss['time'] * 60, territory)
+            await dispatch_spawn_notification(ctx, timer, (boss['time'] - offset) * 60)
 
+    #delete a timer
     @bot.command()
-    async def join(ctx):
+    async def dt(ctx, timer_id):
+        if not timer_id:
+            await ctx.send("You need to provide a timer ID to delete a timer!")
+        else:
+            time_keeper.remove_timer(timer_id)
+            await ctx.send(f"Timer with ID [{timer_id}] has been deleted.")
+
+    # add role to member
+    @bot.command()
+    async def hunt(ctx):
         if not bot_config.boss_hunter_role_id:
             await ctx.send('The Boss Hunter Role ID has not been set. Set it by using ```!set_role [id]```')
             return
@@ -81,7 +95,7 @@ def init():
             await ctx.send("Error: No role was found for that ID that is set.")
 
 
-
+    # remove role from member
     @bot.command()
     async def leave(ctx):
         if not bot_config.boss_hunter_role_id:
@@ -130,11 +144,18 @@ def init():
             await ctx.send(f"An error occurred: {error}")
 
     @bot.event
-    async def on_notify_spawn(ctx, boss, territory):
-        await ctx.send(f"Hey, <@&{bot_config.boss_hunter_role_id}>! {boss['name']} has just spawned!")
-        if territory:
-            await ctx.send(f"Territory: {territory}")
-        time_keeper.remove_timer(boss["key"])
+    async def on_notify_spawn(ctx, timer):
+
+        if not time_keeper.exists(timer.id):
+            print(f'Tried to notify for [{timer.id}] {timer.name} but it does not exist anymore.')
+            return
+
+        if timer.territory:
+            await ctx.send(f"Hey, <@&{bot_config.boss_hunter_role_id}>! {timer.territory} {timer.name} has just spawned!")
+        else:
+            await ctx.send(f"Hey, <@&{bot_config.boss_hunter_role_id}>! {timer.name} has just spawned!")
+
+        time_keeper.remove_timer(timer.id)
 
 
     bot.run(token)

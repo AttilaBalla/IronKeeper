@@ -11,13 +11,13 @@ admins = ['xattus']
 bosses = [
     {
         "name": 'Hornian Queen',
-        "key": 'hqueen',
+        "key": 'hq',
         "time": 120,
         "map": Territories.Neutral
     },
     {
         "name": 'Hornian King',
-        "key": 'hking',
+        "key": 'hk',
         "time": 120,
         "map": Territories.Neutral
     },
