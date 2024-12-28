@@ -24,7 +24,7 @@ def init():
     bot_config = BotConfig()
 
     async def dispatch_spawn_notification(ctx, timer, time):
-        print(f'dispatch set for {timer.name} in {time / 60} minutes')
+        print(f'dispatch set for {timer.name} in {time / 60} minutes by {ctx.author.name}')
         await asyncio.sleep(time)
         bot.dispatch('notify_spawn', ctx, timer)
 
@@ -132,6 +132,7 @@ def init():
     @bot.command()
     @require_bot_owner()
     async def kill(ctx):
+        await show(ctx)
         await ctx.send('Shutting down... :(')
         exit()
 

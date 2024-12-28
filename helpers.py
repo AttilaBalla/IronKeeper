@@ -41,9 +41,7 @@ def output_timer_data(timer_data):
     if isinstance(timer_data, list):
         return f"".join(
             f"`[{timer.id}]` {timer.name} {timer.territory if timer.territory else ""}\n"
-            f"started: <t:{timer.start_time}:f>\n"
-            f"spawns: <t:{timer.respawn_time}:f>\n"
-            f"<t:{timer.respawn_time}:R>\n"
+            f"spawns: <t:{timer.respawn_time}:R>\n"
             f"\n"
             for timer in timer_data)
     else:
@@ -64,8 +62,8 @@ def parse_timer_args(boss, args):
 
     if number_of_args < 2:
         return {
-            "territory": args[0] if boss['map'] == Territories.Both else None,
-            "offset": args[0] if boss['map'] != Territories.Both else 0
+            "territory": args[0] if number_of_args and boss['map'] == Territories.Both else None,
+            "offset": args[0] if number_of_args and boss['map'] != Territories.Both else 0
         }
     else:
         return {
