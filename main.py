@@ -2,6 +2,7 @@ import discord
 import typing
 import asyncio
 from discord.ext import commands
+from secrets import token
 from boss_timer import BossTimer
 from bot_config import BotConfig
 from time_keeper import TimeKeeper
@@ -10,7 +11,7 @@ from helpers import (
     NotBotOwner,
     find_boss,
     validate_input_for_boss,
-    output_timer_data, make_boss_list
+    output_timer_data, make_boss_list, parse_timer_args
 )
 
 def init():
@@ -18,7 +19,6 @@ def init():
     intents.message_content = True
     intents.members = True
     bot = commands.Bot(command_prefix='!', intents=intents)
-    token = ''
 
     time_keeper = TimeKeeper()
     bot_config = BotConfig()
@@ -43,13 +43,20 @@ def init():
             await ctx.send(output_timer_data(time_keeper.timers))
 
     # register and start a new timer
+    # format is !t [key] +[nation] *[offset]
     @bot.command()
-    async def t(ctx, key, territory: typing.Optional[str] = '', offset: typing.Optional[int] = 0):
+    async def t(ctx, key, *args):
         boss = find_boss(key)
 
         if boss is None:
             await ctx.send('Nothing found for that key.')
             return
+
+        # we have to handle inputs without nation BUT with offset
+        # as well as inputs with both nation and offset
+        parsed_args = parse_timer_args(boss, args)
+        territory = parsed_args["territory"]
+        offset = parsed_args["offset"]
 
         is_valid = validate_input_for_boss(boss, territory)
 
@@ -57,7 +64,14 @@ def init():
             await ctx.send('You need to specify ANI or BCU side for that boss!')
             return
 
-        if offset and offset > boss['time'] - 1:
+        if offset:
+            try:
+                offset = int(offset)
+            except ValueError:
+                await ctx.send("An error occurred: Offset has to be a number!")
+                return
+
+        if offset > boss['time'] - 1:
             await ctx.send('That offset is too large and would make no sense!')
             return
 
@@ -76,9 +90,13 @@ def init():
     async def dt(ctx, timer_id):
         if not timer_id:
             await ctx.send("You need to provide a timer ID to delete a timer!")
-        else:
+            return
+        try:
             time_keeper.remove_timer(timer_id)
-            await ctx.send(f"Timer with ID [{timer_id}] has been deleted.")
+        except ValueError:
+            await ctx.send('An error occurred: Command input contains invalid value, expecting `[id]`')
+
+        await ctx.send(f"Timer with ID [{timer_id}] has been deleted.")
 
     # add role to member
     @bot.command()
@@ -130,6 +148,12 @@ def init():
     async def boss_list(ctx):
         await ctx.send(f"`name - key - spawn time in min`")
         await ctx.send(make_boss_list())
+
+    @require_bot_owner()
+    @bot.command()
+    async def test(ctx, key, *args):
+        print(args)
+        await ctx.send(args)
 
 
     @bot.event
