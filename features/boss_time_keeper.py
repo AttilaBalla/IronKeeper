@@ -1,7 +1,7 @@
-from constants import Territories
+from config.constants import Territories
 
 
-class TimeKeeper:
+class BossTimeKeeper:
 
     def __init__(self):
         self.timers = []

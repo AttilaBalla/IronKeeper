@@ -1,5 +1,5 @@
 from discord.ext import commands
-from constants import admins, bosses, Territories
+from config.constants import admins, bosses, Territories
 
 class NotBotOwner(commands.CheckFailure):
     ...
@@ -28,7 +28,7 @@ def validate_input_for_boss(boss, territory):
     if boss['map'] != Territories.Both:
         return True
 
-    if territory == '':
+    if territory == '' or territory is None:
         return False
 
     if territory.upper() not in ['ANI', 'BCU']:
