@@ -7,7 +7,6 @@ from commands.time_management import TimeManagement
 from commands.admin import Admin
 from utilities.helpers import NotBotOwner
 
-
 intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
@@ -30,6 +29,5 @@ async def main():
         await bot.add_cog(TimeManagement(bot))
         await bot.add_cog(Admin(bot))
         await bot.start(token)
-    
 
 asyncio.run(main())

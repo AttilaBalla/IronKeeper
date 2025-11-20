@@ -23,6 +23,10 @@ def find_boss(key):
 
     return result
 
+def find_event(key):
+    pass
+
+
 def validate_input_for_boss(boss, territory):
 
     if boss['map'] != Territories.Both:
@@ -56,6 +60,9 @@ def make_boss_list():
     boss_list = f"```{"".join(f'{boss['name']} - {boss['key']} - {boss['time']}\n' for boss in bosses)}```"
 
     return boss_list
+
+def parse_event_date_time(args):
+    pass
 
 def parse_timer_args(boss, args):
     number_of_args = len(args)
