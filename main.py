@@ -1,8 +1,9 @@
+import os
+from dotenv import load_dotenv
 import discord
 import asyncio
 from discord.ext import commands
 from config.bot_config import BotConfig
-from config.env import token
 from commands.time_management import TimeManagement
 from commands.admin import Admin
 from utilities.helpers import NotBotOwner
@@ -11,6 +12,9 @@ intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 bot = commands.Bot(command_prefix='!', intents=intents)
+
+load_dotenv()
+token = os.getenv('DISCORD_TOKEN')
 
 @bot.event
 async def on_ready():

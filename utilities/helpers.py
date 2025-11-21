@@ -1,5 +1,8 @@
+from datetime import datetime
 from discord.ext import commands
-from config.constants import admins, bosses, Territories
+from config.constants import admins, bosses, events, Territories
+from features.boss_timer import BossTimer
+from features.war_timer import WarTimer
 
 class NotBotOwner(commands.CheckFailure):
     ...
@@ -24,7 +27,11 @@ def find_boss(key):
     return result
 
 def find_event(key):
-    pass
+    result = None
+    for event in events:
+        if event["key"] == key.lower() or event["name"].lower() == key.lower():
+            result = event
+    return result
 
 
 def validate_input_for_boss(boss, territory):
@@ -41,13 +48,13 @@ def validate_input_for_boss(boss, territory):
     return True
 
 def output_timer_data(timer_data):
-
     if isinstance(timer_data, list):
         return f"".join(
             f"`[{timer.id}]` {timer.name} {timer.territory if timer.territory else ""}\n"
             f"spawns: <t:{timer.respawn_time}:R>\n"
             f"\n"
-            for timer in timer_data)
+            # filter out event timers, we only want boss timers here
+            for timer in list(filter(lambda timer: isinstance(timer, BossTimer), timer_data)))
     else:
         return (
             f"`[{timer_data.id}]` {timer_data.name} {timer_data.territory if timer_data.territory else ""}\n"
@@ -62,7 +69,12 @@ def make_boss_list():
     return boss_list
 
 def parse_event_date_time(args):
-    pass
+    if not len(args):
+        return None
+    try:
+        return datetime.strptime(args[0], "%Y%m%d%H%M")
+    except ValueError:
+        return None
 
 def parse_timer_args(boss, args):
     number_of_args = len(args)

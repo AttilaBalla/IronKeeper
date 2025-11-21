@@ -1,15 +1,16 @@
 import asyncio
 from discord.ext import commands
-from features.boss_time_keeper import BossTimeKeeper
+from features.time_keeper import TimeKeeper
 from features.boss_timer import BossTimer
-from utilities.helpers import find_boss, output_timer_data, parse_timer_args, validate_input_for_boss, find_event
+from features.war_timer import WarTimer
+from utilities.helpers import find_boss, output_timer_data, parse_event_date_time, parse_timer_args, validate_input_for_boss, find_event
 
 
 class TimeManagement(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.time_keeper = BossTimeKeeper()
+        self.time_keeper = TimeKeeper()
 
     async def dispatch_spawn_notification(self, ctx, timer, time):
         print(f'dispatch set for {timer.name} in {time / 60} minutes by {ctx.author.name}')
@@ -105,8 +106,18 @@ class TimeManagement(commands.Cog):
         self.time_keeper.remove_timer(timer.id)
 
     async def handle_event(self, ctx, event, args):
-        pass
+        datetime = parse_event_date_time(args)
+        if not datetime:
+            await ctx.send("Invalid date format. Please use YYYYMMDDHHmm.")
+            return
 
+        if self.time_keeper.check_duplicate(event, None):
+            await ctx.send(f"There is already a timer running for that event!")
+        else:
+            timer = WarTimer(event, datetime)
+            self.time_keeper.add_timer(timer)
+            await ctx.send(f"Event '{event['name']}' scheduled for <t:{int(datetime.timestamp())}:f>")
+            # todo notification logic here
 
     async def handle_boss(self, ctx, boss, args):
 
@@ -133,9 +144,7 @@ class TimeManagement(commands.Cog):
             await ctx.send('That offset is too large and would make no sense!')
             return
 
-        is_duplicate = self.time_keeper.check_duplicate(boss, territory)
-
-        if is_duplicate:
+        if self.time_keeper.check_duplicate(boss, territory):
             await ctx.send(f"There is already a timer running for that boss!")
         else:
             timer = BossTimer(boss, territory, offset)
