@@ -1,4 +1,4 @@
-from constants import Territories
+from config.constants import Territories
 
 
 class TimeKeeper:
@@ -33,14 +33,14 @@ class TimeKeeper:
         else:
             print(f'Could not remove timer, ID {timer_id} does not exist!')
 
-    def check_duplicate(self, boss, territory):
-        if boss['map'] == Territories.Both:
-            for timer in self.timers:
-                if timer.key == boss['key'] and timer.territory == territory:
+    def check_duplicate(self, timer, territory):
+        if territory is not None and timer['map'] == Territories.Both:
+            for item in self.timers:
+                if item.key == timer['key'] and item.territory == territory.upper():
                     return True
         else:
-            for timer in self.timers:
-                if timer.key == boss['key']:
+            for item in self.timers:
+                if timer['key'] == item.key:
                     return True
 
         return False

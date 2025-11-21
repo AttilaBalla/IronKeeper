@@ -1,12 +1,42 @@
 from enum import Enum
 
+
 class Territories(Enum):
     Neutral = 0
     BCU = 2
     ANI = 4
     Both = 6
 
+
 admins = ['xattus']
+
+events = [
+    {
+        "name": 'Akron',
+        "key": 'akron',
+        "datetime": None,
+    },
+    {
+        "name": 'Rakion',
+        "key": 'rakion',
+        "datetime": None,
+    },
+    {
+        "name": 'Castle Corona',
+        "key": 'coro',
+        "datetime": None,
+    },
+    {
+        "name": 'Mothership Attack',
+        "key": 'msatk',
+        "datetime": None,
+    },
+    {
+        "name": 'Mothership Defense',
+        "key": 'msdef',
+        "datetime": None,
+    },
+]
 
 bosses = [
     {
@@ -171,11 +201,10 @@ bosses = [
         "time": 1440,
         "map": Territories.Neutral
     },
-{
+    {
         "name": 'test',
         "key": 'test',
         "time": 1,
         "map": Territories.Both
     },
 ]
-
