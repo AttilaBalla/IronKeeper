@@ -6,4 +6,4 @@ class BotConfig(commands.Cog):
         self.bot = bot
         self.boss_hunter_role_id = 0
         self.warrior_role_id = 0
-        self.channel_id = 0
+        self.war_channel_id = 0

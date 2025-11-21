@@ -1,3 +1,4 @@
+import time
 from datetime import datetime
 from discord.ext import commands
 from config.constants import admins, bosses, events, Territories
@@ -47,7 +48,7 @@ def validate_input_for_boss(boss, territory):
 
     return True
 
-def output_timer_data(timer_data):
+def output_boss_timer_data(timer_data):
     if isinstance(timer_data, list):
         return f"".join(
             f"`[{timer.id}]` {timer.name} {timer.territory if timer.territory else ""}\n"
@@ -62,6 +63,14 @@ def output_timer_data(timer_data):
             f"spawns: <t:{timer_data.respawn_time}:f>\n"
             f"<t:{timer_data.respawn_time}:R>\n"
         )
+    
+def output_event_timer_data(timer_data):
+    return f"".join(
+        f"`[{timer.id}]` {timer.name} - <t:{timer.start_date_time}:f>\n"
+        f"starts: <t:{timer.start_date_time}:R>\n"
+        f"\n"
+        # filter out boss timers, we only want event timers here
+        for timer in list(filter(lambda timer: isinstance(timer, WarTimer), timer_data)))
 
 def make_boss_list():
     boss_list = f"```{"".join(f'{boss['name']} - {boss['key']} - {boss['time']}\n' for boss in bosses)}```"
@@ -89,3 +98,6 @@ def parse_timer_args(boss, args):
             "territory": args[0],
             "offset": args[1]
         }
+    
+def calculate_notification_time(timer):
+    return (int(timer.start_date_time) - int(time.time())) - 3600  # notify 1 hour before start
