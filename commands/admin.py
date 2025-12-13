@@ -9,8 +9,10 @@ class Admin(commands.Cog):
     @require_bot_owner()
     @commands.command()
     async def kill(self, ctx):
+        time_management = ctx.bot.get_cog('TimeManagement')
+        time_management.time_keeper.save_timer_state()
         await ctx.send('Shutting down... :(')
-        exit()
+        await ctx.bot.close()
 
     # set boss hunters role ID
     @require_bot_owner()

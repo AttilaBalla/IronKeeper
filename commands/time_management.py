@@ -1,6 +1,5 @@
 import asyncio
 import time
-from unittest import case
 from discord.ext import commands
 from features.time_keeper import TimeKeeper
 from features.boss_timer import BossTimer
@@ -14,10 +13,17 @@ class TimeManagement(commands.Cog):
         self.bot = bot
         self.time_keeper = TimeKeeper()
 
-    async def dispatch_notification(self, ctx, timer, time, channel_id):
-        print(f'dispatch set for {timer.name} in {time / 60} minutes by {ctx.author.name}')
-        await asyncio.sleep(time)
-        self.bot.dispatch('notify_spawn', channel_id, timer)
+    async def cog_load(self):
+        if len(self.time_keeper.timers):
+            for timer in self.time_keeper.timers:
+                self.bot.loop.create_task(self.dispatch_notification(timer, timer.respawn_time - time.time()))
+
+    async def dispatch_notification(self, timer, respawn_time):
+        bot_config = self.bot.get_cog('BotConfig')
+        channel_id = bot_config.war_channel_id if isinstance(timer, WarTimer) else bot_config.boss_hunter_role_id
+        print(f'dispatch set for {timer.name} in {respawn_time / 60} minutes')
+        await asyncio.sleep(respawn_time)
+        self.bot.dispatch('notify_spawn', channel_id , timer)
 
     @commands.command()
     async def show(self, ctx):
@@ -33,7 +39,7 @@ class TimeManagement(commands.Cog):
         else:
             bot_config = ctx.bot.get_cog('BotConfig')
             channel = self.bot.get_channel(bot_config.war_channel_id)
-            if(channel is None):
+            if channel is None:
                 await ctx.send('War channel is not set or invalid.')
                 return
             await channel.purge(limit=None)
@@ -133,11 +139,10 @@ class TimeManagement(commands.Cog):
         if self.time_keeper.check_duplicate(event, None):
             await ctx.send(f"There is already a timer running for that event!")
         else:
-            bot_config = ctx.bot.get_cog('BotConfig')
             timer = WarTimer(event, datetime.timestamp())
             self.time_keeper.add_timer(timer)
             await ctx.send(f"Event '{event['name']}' scheduled for <t:{int(datetime.timestamp())}:f>")
-            self.bot.loop.create_task(self.dispatch_notification(ctx, timer, calculate_notification_time(timer), bot_config.war_channel_id))
+            self.bot.loop.create_task(self.dispatch_notification(timer, calculate_notification_time(timer)))
 
     async def handle_boss(self, ctx, boss, args):
 
@@ -167,7 +172,7 @@ class TimeManagement(commands.Cog):
         if self.time_keeper.check_duplicate(boss, territory):
             await ctx.send(f"There is already a timer running for that boss!")
         else:
-            timer = BossTimer(boss, territory, offset)
+            timer = BossTimer(boss, int(time.time()), territory, offset)
             self.time_keeper.add_timer(timer)
             await ctx.send(output_boss_timer_data(timer))
-            self.bot.loop.create_task(self.dispatch_notification(ctx, timer, (boss['time'] - offset) * 60, ctx.channel.id))
+            self.bot.loop.create_task(self.dispatch_notification(timer, (boss['time'] - offset) * 60))

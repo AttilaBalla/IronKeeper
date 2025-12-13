@@ -15,6 +15,7 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 
 load_dotenv()
 token = os.getenv('DISCORD_TOKEN')
+timers_csv = os.getenv('TIMERS_CSV_PATH')
 
 @bot.event
 async def on_ready():
@@ -30,7 +31,17 @@ async def on_command_error(ctx, error):
 async def main():
     async with bot:
         await bot.add_cog(BotConfig(bot))
-        await bot.add_cog(TimeManagement(bot))
+        time_management = TimeManagement(bot)
+        # set persistence path on the TimeKeeper and attempt to load existing timers
+        time_management.time_keeper.persistence_path = timers_csv
+        try:
+            loaded = time_management.time_keeper.load_from_csv()
+            if loaded:
+                print(f'Loaded {loaded} timers from {timers_csv}')
+        except Exception as error:
+                print(f'An error occurred when attempting to load timers from csv: {error}')
+
+        await bot.add_cog(time_management)
         await bot.add_cog(Admin(bot))
         await bot.start(token)
 
