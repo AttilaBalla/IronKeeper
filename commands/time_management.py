@@ -16,12 +16,12 @@ class TimeManagement(commands.Cog):
     async def cog_load(self):
         if len(self.time_keeper.timers):
             for timer in self.time_keeper.timers:
-                self.bot.loop.create_task(self.dispatch_notification(timer, timer.respawn_time - time.time()))
+                self.bot.loop.create_task(self.dispatch_notification(timer, timer.due_time - time.time()))
 
     async def dispatch_notification(self, timer, respawn_time):
         bot_config = self.bot.get_cog('BotConfig')
-        channel_id = bot_config.war_channel_id if isinstance(timer, WarTimer) else bot_config.boss_hunter_role_id
-        print(f'dispatch set for {timer.name} in {respawn_time / 60} minutes')
+        channel_id = bot_config.war_channel_id if isinstance(timer, WarTimer) else bot_config.boss_channel_id
+        print(f'dispatch set for {timer.name} in {respawn_time / 60} minutes, channel ID: {channel_id}')
         await asyncio.sleep(respawn_time)
         self.bot.dispatch('notify_spawn', channel_id , timer)
 

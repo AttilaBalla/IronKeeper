@@ -6,7 +6,7 @@ class WarTimer:
         self.id = None
         self.key = event['key']
         self.name = event['name']
-        self.start_date_time = int(start_date_time)
+        self.due_time = int(start_date_time)
         self.created_at = time.time()
 
     def to_csv_row(self):
@@ -16,7 +16,7 @@ class WarTimer:
             'key': self.key,
             'name': self.name,
             'start_time': self.created_at,
-            'respawn_time': int(self.start_date_time),
+            'due_time': int(self.due_time),
             'territory': None,
         }
 

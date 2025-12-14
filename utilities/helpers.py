@@ -52,7 +52,7 @@ def output_boss_timer_data(timer_data):
     if isinstance(timer_data, list):
         return f"".join(
             f"`[{timer.id}]` {timer.name} {timer.territory if timer.territory else ""}\n"
-            f"spawns: <t:{timer.respawn_time}:R>\n"
+            f"spawns: <t:{timer.due_time}:R>\n"
             f"\n"
             # filter out event timers, we only want boss timers here
             for timer in list(filter(lambda timer: isinstance(timer, BossTimer), timer_data)))
@@ -60,14 +60,14 @@ def output_boss_timer_data(timer_data):
         return (
             f"`[{timer_data.id}]` {timer_data.name} {timer_data.territory if timer_data.territory else ""}\n"
             f"started: <t:{timer_data.start_time}:f>\n"
-            f"spawns: <t:{timer_data.respawn_time}:f>\n"
-            f"<t:{timer_data.respawn_time}:R>\n"
+            f"spawns: <t:{timer_data.due_time}:f>\n"
+            f"<t:{timer_data.due_time}:R>\n"
         )
     
 def output_event_timer_data(timer_data):
     return f"".join(
-        f"`[{timer.id}]` {timer.name} - <t:{timer.start_date_time}:f>\n"
-        f"starts: <t:{timer.start_date_time}:R>\n"
+        f"`[{timer.id}]` {timer.name} - <t:{timer.due_time}:f>\n"
+        f"starts: <t:{timer.due_time}:R>\n"
         f"\n"
         # filter out boss timers, we only want event timers here
         for timer in list(filter(lambda timer: isinstance(timer, WarTimer), timer_data)))
@@ -100,4 +100,4 @@ def parse_timer_args(boss, args):
         }
     
 def calculate_notification_time(timer):
-    return (int(timer.start_date_time) - int(time.time())) - 3600  # notify 1 hour before start
+    return (int(timer.due_time) - int(time.time())) - 3600  # notify 1 hour before start

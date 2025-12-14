@@ -9,7 +9,7 @@ class BossTimer:
         self.start_time = start_time
         self.territory = territory.upper() if territory else None
         # if loaded from csv, respawn time is already calculated
-        self.respawn_time = int(respawn_time) if respawn_time else self.start_time + (int(boss['time']) - time_offset) * 60
+        self.due_time = int(respawn_time) if respawn_time else self.start_time + (int(boss['time']) - time_offset) * 60
 
     def get_elapsed_time(self):
         return round(time.time() - self.start_time, 2)
@@ -22,7 +22,7 @@ class BossTimer:
             'key': self.key,
             'name': self.name,
             'start_time': int(self.start_time),
-            'respawn_time': int(self.respawn_time),
+            'due_time': int(self.due_time),
             'territory': self.territory or '',
         }
 
@@ -35,5 +35,5 @@ class BossTimer:
             'name': row.get('name') or '',
         }
         territory = row.get('territory') or None
-        inst = cls(boss, row.get('start_time'), territory, 0, row.get('respawn_time'))
+        inst = cls(boss, row.get('start_time'), territory, 0, row.get('due_time'))
         return inst

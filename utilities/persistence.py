@@ -11,7 +11,7 @@ CSV_HEADERS = [
     'key',
     'name',
     'start_time',
-    'respawn_time',
+    'due_time',
     'territory',
 ]
 
@@ -70,7 +70,7 @@ def load_timers_from_csv(path, time_keeper):
                 timer_type = (raw.get('timer_type') or '').lower()
                 row = {k: raw.get(k, '') for k in CSV_HEADERS}
                 # subtract the current time from the respawn time, if result is negative, timer is in the past
-                if int(row['respawn_time']) - int(time.time()) < 1:
+                if int(row['due_time']) - int(time.time()) < 1:
                     continue
                 if timer_type == 'boss':
                     t = BossTimer.from_csv_row(row)
