@@ -59,10 +59,12 @@ def load_timers_from_csv(path, time_keeper):
     - time_keeper: instance of TimeKeeper (features.time_keeper.TimeKeeper)
     Returns the number of timers loaded.
     """
-    if not os.path.exists(path):
-        return 0
-
     loaded = 0
+
+    if not os.path.exists(path):
+        print('CSV File not found')
+        return loaded
+
     with open(path, newline='', encoding='utf-8') as f:
         reader = csv.DictReader(f)
         for idx, raw in enumerate(reader, start=1):

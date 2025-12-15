@@ -23,7 +23,7 @@ class TimeManagement(commands.Cog):
         channel_id = bot_config.war_channel_id if isinstance(timer, WarTimer) else bot_config.boss_channel_id
         print(f'dispatch set for {timer.name} in {respawn_time / 60} minutes, channel ID: {channel_id}')
         await asyncio.sleep(respawn_time)
-        self.bot.dispatch('notify_spawn', channel_id , timer)
+        self.bot.dispatch("timer_expired", channel_id , timer)
 
     @commands.command()
     async def show(self, ctx):
@@ -109,7 +109,7 @@ class TimeManagement(commands.Cog):
             await ctx.send("Error: No role was found for that ID that is set.")
 
     @commands.Cog.listener()
-    async def on_notify_spawn(self, channel_id, timer):
+    async def on_timer_expired(self, channel_id, timer):
         bot_config = self.bot.get_cog('BotConfig')
 
         if not self.time_keeper.exists(timer.id):
@@ -143,6 +143,7 @@ class TimeManagement(commands.Cog):
             self.time_keeper.add_timer(timer)
             await ctx.send(f"Event '{event['name']}' scheduled for <t:{int(datetime.timestamp())}:f>")
             self.bot.loop.create_task(self.dispatch_notification(timer, calculate_notification_time(timer)))
+            self.time_keeper.save_timer_state()
 
     async def handle_boss(self, ctx, boss, args):
 
@@ -176,3 +177,4 @@ class TimeManagement(commands.Cog):
             self.time_keeper.add_timer(timer)
             await ctx.send(output_boss_timer_data(timer))
             self.bot.loop.create_task(self.dispatch_notification(timer, (boss['time'] - offset) * 60))
+            self.time_keeper.save_timer_state()

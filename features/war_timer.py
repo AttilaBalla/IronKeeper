@@ -7,7 +7,7 @@ class WarTimer:
         self.key = event['key']
         self.name = event['name']
         self.due_time = int(start_date_time)
-        self.created_at = time.time()
+        self.created_at = int(time.time())
 
     def to_csv_row(self):
         return {
@@ -16,27 +16,19 @@ class WarTimer:
             'key': self.key,
             'name': self.name,
             'start_time': self.created_at,
-            'due_time': int(self.due_time),
+            'due_time': self.due_time,
             'territory': None,
         }
 
     @classmethod
     def from_csv_row(cls, row):
-        try:
-            id_val = int(row.get('id')) if row.get('id') not in (None, '') else None
-        except Exception:
-            id_val = None
-
-        try:
-            spawn_ts = int(row.get('spawn_ts') or 0)
-        except Exception:
-            spawn_ts = 0
-
+        id_val = int(row.get('id')) if row.get('id') not in (None, '') else None
+        due_time = int(row.get('due_time') or 0)
         event = {
             'key': row.get('key') or '',
             'name': row.get('name') or '',
         }
 
-        inst = cls(event, spawn_ts)
+        inst = cls(event, due_time)
         inst.id = id_val
         return inst

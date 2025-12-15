@@ -29,7 +29,15 @@ class Admin(commands.Cog):
         bot_config = ctx.bot.get_cog('BotConfig')
         bot_config.war_channel_id = int(channel_id)
         await ctx.send(f"War-timers channel set to <#{bot_config.war_channel_id}>")
-    
+
+    # set boss channel ID
+    @require_bot_owner()
+    @commands.command()
+    async def set_boss_channel(self, ctx, channel_id):
+        bot_config = ctx.bot.get_cog('BotConfig')
+        bot_config.boss_channel_id = int(channel_id)
+        await ctx.send(f"Boss Hunter channel set to <#{bot_config.boss_channel_id}>")
+
     # list the available boss data
     @require_bot_owner()
     @commands.command()
