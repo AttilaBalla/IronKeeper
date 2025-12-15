@@ -77,6 +77,62 @@ class TimeManagement(commands.Cog):
         await ctx.send(f"Timer with ID [{timer_id}] has been deleted.")
 
     @commands.command()
+    async def restart_timers(self, ctx):
+        """Restart all currently running boss timers
+
+        This removes the existing BossTimer instances (so previously-scheduled notification tasks won't trigger)
+        and creates new timers starting at the current time. War timers are ignored.
+        """
+        now = int(time.time())
+        restarted = 0
+        # iterate over a copy because we'll be removing timers during the loop
+        timers_snapshot = list(self.time_keeper.timers)
+
+        for timer in timers_snapshot:
+            if not isinstance(timer, BossTimer):
+                continue
+
+            # try to find boss definition to get canonical spawn time
+            boss = find_boss(timer.key)
+            if not boss:
+                # can't compute new timer without boss definition; skip
+                continue
+
+            boss_time = int(boss['time'])
+            # original duration that was set when the timer was created (in minutes)
+            try:
+                original_duration_minutes = (int(timer.due_time) - int(timer.start_time)) / 60
+            except Exception:
+                original_duration_minutes = boss_time
+
+            # derive the original offset in minutes
+            offset_minutes = boss_time - original_duration_minutes
+            # normalize offset
+            offset = int(round(offset_minutes)) if offset_minutes > 0 else 0
+            if offset < 0:
+                offset = 0
+            if offset > boss_time - 1:
+                offset = 0
+
+            # remove old timer so its scheduled task (sleep) will be ignored by the notifier
+            self.time_keeper.remove_timer(timer.id)
+
+            # create and add a fresh timer starting now preserving territory and offset
+            new_timer = BossTimer(boss, now, timer.territory, offset)
+            self.time_keeper.add_timer(new_timer)
+
+            # schedule notification for the new timer
+            self.bot.loop.create_task(self.dispatch_notification(new_timer, (boss_time - offset) * 60))
+
+            restarted += 1
+
+        # persist the new state
+        self.time_keeper.save_timer_state()
+        await ctx.send(f"Restarted {restarted} boss timer(s).")
+        await ctx.bot.get_command("show").invoke(ctx)
+
+
+    @commands.command()
     async def hunt(self, ctx):
 
         bot_config = self.bot.get_cog('BotConfig')
@@ -119,14 +175,14 @@ class TimeManagement(commands.Cog):
         channel = self.bot.get_channel(channel_id)
 
         if isinstance(timer, WarTimer):
-            await channel.send(f"Event '{timer.name}' is starting in 1 hour!")
+            await channel.send(f"Hey <@&{bot_config.warrior_role_id}>! Event `{timer.name}` is starting in 1 hour!")
             self.time_keeper.remove_timer(timer.id)
             return
 
         if timer.territory:
-            await channel.send(f"Hey, <@&{bot_config.boss_hunter_role_id}>! {timer.territory} {timer.name} has just spawned!")
+            await channel.send(f"Hey <@&{bot_config.boss_hunter_role_id}>! {timer.territory} {timer.name} has just spawned!")
         else:
-            await channel.send(f"Hey, <@&{bot_config.boss_hunter_role_id}>! {timer.name} has just spawned!")
+            await channel.send(f"Hey <@&{bot_config.boss_hunter_role_id}>! {timer.name} has just spawned!")
 
         self.time_keeper.remove_timer(timer.id)
 
@@ -141,7 +197,7 @@ class TimeManagement(commands.Cog):
         else:
             timer = WarTimer(event, datetime.timestamp())
             self.time_keeper.add_timer(timer)
-            await ctx.send(f"Event '{event['name']}' scheduled for <t:{int(datetime.timestamp())}:f>")
+            await ctx.send(f"Event `{event['name']}` scheduled for <t:{int(datetime.timestamp())}:f>")
             self.bot.loop.create_task(self.dispatch_notification(timer, calculate_notification_time(timer)))
             self.time_keeper.save_timer_state()
 

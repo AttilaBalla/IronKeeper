@@ -52,7 +52,8 @@ def output_boss_timer_data(timer_data):
     if isinstance(timer_data, list):
         return f"".join(
             f"`[{timer.id}]` {timer.name} {timer.territory if timer.territory else ""}\n"
-            f"spawns: <t:{timer.due_time}:R>\n"
+            f"spawns <t:{timer.due_time}:R>\n"
+            f"on <t:{timer.due_time}:f>\n"
             f"\n"
             # filter out event timers, we only want boss timers here
             for timer in list(filter(lambda timer: isinstance(timer, BossTimer), timer_data)))
