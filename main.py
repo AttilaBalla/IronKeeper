@@ -18,6 +18,8 @@ token = os.getenv('DISCORD_TOKEN')
 timers_csv = os.getenv('TIMERS_CSV_PATH')
 war_channel_id = os.getenv('WAR_CHANNEL_ID')
 boss_channel_id = os.getenv('BOSS_CHANNEL_ID')
+warrior_role = os.getenv('IT_PVP_ROLE_ID')
+boss_role = os.getenv('IT_BOSS_HUNTER_ROLE_ID')
 
 @bot.event
 async def on_ready():
@@ -34,6 +36,8 @@ def setup_bot_config():
     bot_config = BotConfig(bot)
     bot_config.war_channel_id = war_channel_id
     bot_config.boss_channel_id = boss_channel_id
+    bot_config.warrior_role_id = warrior_role
+    bot_config.boss_hunter_role_id = boss_role
 
     return bot_config
 
