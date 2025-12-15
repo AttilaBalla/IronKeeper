@@ -1,11 +1,12 @@
 from config.constants import Territories
-
+from utilities.persistence import save_timers_to_csv, load_timers_from_csv
 
 class TimeKeeper:
 
     def __init__(self):
         self.timers = []
         self.counter = 0
+        self.persistence_path = None
 
     def exists(self, timer_id):
         for timer in self.timers:
@@ -45,3 +46,10 @@ class TimeKeeper:
 
         return False
 
+    def save_timer_state(self):
+        print(f'Saving current timers to {self.persistence_path}')
+        save_timers_to_csv(self.timers, self.persistence_path)
+
+    def load_from_csv(self):
+        print(f'Trying to load timers from {self.persistence_path}')
+        return load_timers_from_csv(self.persistence_path, self)
