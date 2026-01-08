@@ -8,6 +8,7 @@ class BotConfig(commands.Cog):
         self.warrior_role_id = 0
         self.war_channel_id = 0
         self.boss_channel_id = 0
+        self.stat_channel_id = 0
 
 # IDs must be ints, otherwise discord will not find the channel or role
     @property
@@ -26,6 +27,10 @@ class BotConfig(commands.Cog):
     def boss_channel_id(self) -> int:
         return self._boss_channel_id
 
+    @property
+    def stat_channel_id(self) -> int:
+        return self._stat_channel_id
+
     @boss_hunter_role_id.setter
     def boss_hunter_role_id(self, value):
         self._boss_hunter_role_id = int(value)
@@ -41,3 +46,7 @@ class BotConfig(commands.Cog):
     @boss_channel_id.setter
     def boss_channel_id(self, value):
         self._boss_channel_id = int(value)
+
+    @stat_channel_id.setter
+    def stat_channel_id(self, value):
+        self._stat_channel_id = int(value)

@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 import discord
 import asyncio
 from discord.ext import commands
+from commands.brig_stats import BrigStats
 from config.bot_config import BotConfig
 from commands.time_management import TimeManagement
 from commands.admin import Admin
@@ -18,6 +19,7 @@ token = os.getenv('DISCORD_TOKEN')
 timers_csv = os.getenv('TIMERS_CSV_PATH')
 war_channel_id = os.getenv('WAR_CHANNEL_ID')
 boss_channel_id = os.getenv('BOSS_CHANNEL_ID')
+stat_channel_id = os.getenv('STAT_CHANNEL_ID')
 warrior_role = os.getenv('IT_PVP_ROLE_ID')
 boss_role = os.getenv('IT_BOSS_HUNTER_ROLE_ID')
 
@@ -38,6 +40,7 @@ def setup_bot_config():
     bot_config.boss_channel_id = boss_channel_id
     bot_config.warrior_role_id = warrior_role
     bot_config.boss_hunter_role_id = boss_role
+    bot_config.stat_channel_id = stat_channel_id
 
     return bot_config
 
@@ -59,6 +62,7 @@ async def main():
     async with bot:
         await bot.add_cog(setup_bot_config())
         await bot.add_cog(setup_time_management())
+        await bot.add_cog(BrigStats(bot))
         await bot.add_cog(Admin(bot))
         await bot.start(token)
 

@@ -27,6 +27,8 @@ class TimeManagement(commands.Cog):
 
     @commands.command()
     async def show(self, ctx):
+        """Show currently running boss timers
+        """
         if len(list(filter(lambda timer: isinstance(timer, BossTimer), self.time_keeper.timers))) == 0:
             await ctx.send('No timers are running right now.')
         else:
@@ -34,6 +36,8 @@ class TimeManagement(commands.Cog):
 
     @commands.command()
     async def update_events(self, ctx):
+        """Wipe War times channel and post current events
+        """
         if len(list(filter(lambda timer: isinstance(timer, WarTimer), self.time_keeper.timers))) == 0:
             await ctx.send('No events are scheduled right now.')
         else:
@@ -47,6 +51,8 @@ class TimeManagement(commands.Cog):
 
     @commands.command()
     async def t(self, ctx, key, *args):
+        """Create a new boss / event timer - see #bot-commands
+        """
         event = find_event(key)
         boss = None
 
@@ -66,6 +72,8 @@ class TimeManagement(commands.Cog):
 
     @commands.command()
     async def dt(self, ctx, timer_id):
+        """Delete a timer by ID
+        """
         if not timer_id:
             await ctx.send("You need to provide a timer ID to delete a timer!")
             return
@@ -134,7 +142,8 @@ class TimeManagement(commands.Cog):
 
     @commands.command()
     async def hunt(self, ctx):
-
+        """Assign Boss Hunter role
+        """
         bot_config = self.bot.get_cog('BotConfig')
 
         if not bot_config.boss_hunter_role_id:
@@ -150,7 +159,8 @@ class TimeManagement(commands.Cog):
 
     @commands.command()
     async def leave(self, ctx):
-
+        """Remove Boss Hunter role
+        """
         bot_config = self.bot.get_cog('BotConfig')
 
         if not bot_config.boss_hunter_role_id:
@@ -175,14 +185,14 @@ class TimeManagement(commands.Cog):
         channel = self.bot.get_channel(channel_id)
 
         if isinstance(timer, WarTimer):
-            await channel.send(f"Hey <@&{bot_config.warrior_role_id}>! Event `{timer.name}` is starting in 1 hour!")
+            await channel.send(f"`{timer.name}` in 1h - <@&{bot_config.warrior_role_id}>! Event `{timer.name}` is starting in 1 hour!")
             self.time_keeper.remove_timer(timer.id)
             return
 
         if timer.territory:
-            await channel.send(f"Hey <@&{bot_config.boss_hunter_role_id}>! {timer.territory} {timer.name} has just spawned!")
+            await channel.send(f"{timer.territory} {timer.name} - <@&{bot_config.boss_hunter_role_id}>! {timer.territory} {timer.name} has just spawned!")
         else:
-            await channel.send(f"Hey <@&{bot_config.boss_hunter_role_id}>! {timer.name} has just spawned!")
+            await channel.send(f"{timer.name} - <@&{bot_config.boss_hunter_role_id}>! {timer.name} has just spawned!")
 
         self.time_keeper.remove_timer(timer.id)
 
