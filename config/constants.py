@@ -10,6 +10,32 @@ class Territories(Enum):
 
 admins = ['xattus']
 
+CSV_HEADERS_TIMERS = [
+    'id',
+    'timer_type',
+    'key',
+    'name',
+    'start_time',
+    'due_time',
+    'territory',
+]
+
+CSV_HEADERS_MEMBER_STATS = [
+    'name',
+    'level',
+    'gear',
+    'fame',
+    'fame_diff',
+]
+
+CSV_HEADERS_BRIG_STATS = [
+    'name',
+    'nation',
+    'total_fame',
+    'monthly_fame',
+    'fame_diff',
+]
+
 events = [
     {
         "name": 'Akron',

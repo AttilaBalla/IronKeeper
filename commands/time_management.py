@@ -2,8 +2,8 @@ import asyncio
 import time
 from discord.ext import commands
 from features.time_keeper import TimeKeeper
-from features.boss_timer import BossTimer
-from features.war_timer import WarTimer
+from models.boss_timer import BossTimer
+from models.war_timer import WarTimer
 from utilities.helpers import find_boss, output_boss_timer_data, output_event_timer_data, parse_event_date_time, parse_timer_args, validate_input_for_boss, find_event, calculate_notification_time
 
 
@@ -14,6 +14,9 @@ class TimeManagement(commands.Cog):
         self.time_keeper = TimeKeeper()
 
     async def cog_load(self):
+
+        self.time_keeper.load_timers_from_csv()
+
         if len(self.time_keeper.timers):
             for timer in self.time_keeper.timers:
                 self.bot.loop.create_task(self.dispatch_notification(timer, timer.due_time - time.time()))

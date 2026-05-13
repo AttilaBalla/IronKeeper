@@ -32,3 +32,24 @@ class BrigMember:
             return
 
         self._gear = mapping.get(key)
+
+    def to_csv_row(self):
+        return {
+            'name': self.name,
+            'level': self.level,
+            'gear': self.gear,
+            'fame': self.fame,
+            'fame_diff': self.fame_diff
+        }
+
+    @classmethod
+    def from_csv_row(cls, row):
+        """Reconstruct a BrigMember from a CSV row dict."""
+        member = cls(
+            name=row['name'],
+            level=row['level'],
+            gear=row['gear'],
+            fame=row['fame']
+        )
+        member.fame_diff = int(row.get('fame_diff', 0))
+        return member
