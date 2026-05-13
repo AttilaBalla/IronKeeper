@@ -4,11 +4,16 @@ class BotConfig(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.brigade = "",
         self.boss_hunter_role_id = 0
         self.warrior_role_id = 0
         self.war_channel_id = 0
         self.boss_channel_id = 0
         self.stat_channel_id = 0
+
+    @property
+    def brigade(self) -> str:
+        return self._brigade
 
 # IDs must be ints, otherwise discord will not find the channel or role
     @property
@@ -30,6 +35,10 @@ class BotConfig(commands.Cog):
     @property
     def stat_channel_id(self) -> int:
         return self._stat_channel_id
+
+    @brigade.setter
+    def brigade(self, value):
+        self._brigade = value
 
     @boss_hunter_role_id.setter
     def boss_hunter_role_id(self, value):

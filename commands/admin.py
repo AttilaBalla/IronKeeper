@@ -14,6 +14,14 @@ class Admin(commands.Cog):
         await ctx.send('Shutting down... :(')
         await ctx.bot.close()
 
+    # set brigade that is filtered for when querying brig stats
+    @require_bot_owner()
+    @commands.command()
+    async def set_brigade(self, ctx, brigade):
+        bot_config = ctx.bot.get_cog('BotConfig')
+        bot_config.brigade = brigade
+        await ctx.send(f"Brigade has been set to <@&{bot_config.brigade}>")
+
     # set boss hunters role ID
     @require_bot_owner()
     @commands.command()
