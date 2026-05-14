@@ -14,6 +14,14 @@ class Admin(commands.Cog):
         await ctx.send('Shutting down... :(')
         await ctx.bot.close()
 
+    # set brigade that is filtered for when querying brig stats
+    @require_bot_owner()
+    @commands.command()
+    async def set_brigade(self, ctx, brigade):
+        bot_config = ctx.bot.get_cog('BotConfig')
+        bot_config.brigade = brigade
+        await ctx.send(f"Brigade has been set to <@&{bot_config.brigade}>")
+
     # set boss hunters role ID
     @require_bot_owner()
     @commands.command()
@@ -45,8 +53,18 @@ class Admin(commands.Cog):
         await ctx.send(f"`name - key - spawn time in min`")
         await ctx.send(make_boss_list())
 
+    # Toggle automatic war timer rescheduling on/off
+    @require_bot_owner()
+    @commands.command()
+    async def toggle_reschedule(self, ctx):
+        bot_config = ctx.bot.get_cog('BotConfig')
+        bot_config.auto_reschedule_wars = not bot_config.auto_reschedule_wars
+        status = "enabled" if bot_config.auto_reschedule_wars else "disabled"
+        await ctx.send(f"Auto-reschedule war timers: {status}")
+
     @require_bot_owner()
     @commands.command()
     async def test(self, ctx, key, *args):
         print(args)
         await ctx.send(args)
+

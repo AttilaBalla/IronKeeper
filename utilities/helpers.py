@@ -2,8 +2,8 @@ import time
 from datetime import datetime
 from discord.ext import commands
 from config.constants import admins, bosses, events, Territories
-from features.boss_timer import BossTimer
-from features.war_timer import WarTimer
+from models.boss_timer import BossTimer
+from models.war_timer import WarTimer
 
 class NotBotOwner(commands.CheckFailure):
     ...
@@ -138,52 +138,63 @@ def calculate_member_fame_diff(current, previous):
     return current
 
 def calculate_brig_fame_diff(current, previous):
+    """
+    Compute fame differences for a list of Brigade instances.
 
-    for c in current:
-        c['Diff'] = 0
-
+    - `current` and `previous` are lists of `Brigade` objects.
+    - For each brigade in `current`, set `brigade.fame_diff` to:
+        current.total_fames - previous.total_fames (if a previous brigade with the same name exists)
+        otherwise: 0 (default)
+    - Matching is done on `brigade.name`.
+    - Returns the `current` list sorted by monthly_fame descending (with fame_diff set).
+    """
     if len(previous) == 0:
-        return current
+        return sorted(current, key=lambda b: b.monthly_fame, reverse=True)
 
+    # Build a lookup by name for previous brigades
     prev_map = {}
     for p in previous:
-        key = p['Name']
-        prev_map[key] = p
+        prev_map[p.name] = p
 
+    # Compute fame_diff for each current brigade
     for c in current:
-        key = c['Name']
-        prev = prev_map.get(key)
+        prev = prev_map.get(c.name)
         if prev is not None:
-            c['Diff'] = int(c['TotalFame']) - int(prev['TotalFame'])
+            c.fame_diff = int(c.total_fame) - int(prev.total_fames)
 
-    return sorted(current, key=lambda b: b['MonthlyFame'], reverse=True)
+    # Sort by monthly_fame descending
+    return sorted(current, key=lambda b: b.monthly_fame, reverse=True)
 
 
 def create_brigs_table(brig_data):
-
     if not brig_data:
         return ""
 
-    # Ensure string values and compute column widths (cap name width for readability)
-    names = [brig['Name'] for brig in brig_data]
-    members_vals = [str(brig['Members']) for brig in brig_data]
-    total_fame_vals = [str(brig['TotalFame']) for brig in brig_data]
-    monthly_fame_vals = [str(brig['MonthlyFame']) for brig in brig_data]
-    fame_diff_vals = [str(brig['Diff']) for brig in brig_data]
+    nation_mapping = {
+        2: 'BCU',
+        4: 'ANI'
+    }
+    # Extract and convert values from Brigade objects
+    names = [brig.name for brig in brig_data]
+    nation_codes = [int(brig.nation) for brig in brig_data]
+    nation_vals = [nation_mapping.get(code, "UNKNOWN") for code in nation_codes]
+    total_fame_vals = [str(brig.total_fame) for brig in brig_data]
+    monthly_fame_vals = [str(brig.monthly_fame) for brig in brig_data]
+    fame_diff_vals = [str(brig.fame_diff) for brig in brig_data]
 
     name_w = max(4, min(30, max(len(n) for n in names)))
-    members_w = 7
+    nation_w = 7
     total_fame_w = 7
     monthly_fame_w = 7
     fame_diff_w = 6
 
     # Header and separator
-    header = f"{'Brigade':<{name_w}} | {'Members':^{members_w}} | {'Total':^{total_fame_w}} | {'Monthly':^{monthly_fame_w}} | {'Diff':^{fame_diff_w}}"
+    header = f"{'Brigade - Monthly':<{name_w}} | {'Nation':^{nation_w}} | {'Total':^{total_fame_w}} | {'Monthly':^{monthly_fame_w}} | {'Diff':^{fame_diff_w}}"
     sep = '-' * len(header)
 
     # Rows
     rows = '\n'.join(
-        f"{names[i]:<{name_w}} | {members_vals[i]:^{members_w}} | {total_fame_vals[i]:^{total_fame_w}} | {monthly_fame_vals[i]:^{monthly_fame_w}} | {fame_diff_vals[i]:^{fame_diff_w}}"
+        f"{names[i]:<{name_w}} | {nation_vals[i]:^{nation_w}} | {total_fame_vals[i]:^{total_fame_w}} | {monthly_fame_vals[i]:^{monthly_fame_w}} | {fame_diff_vals[i]:^{fame_diff_w}}"
         for i in range(len(brig_data))
     )
 
