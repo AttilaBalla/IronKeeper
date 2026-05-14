@@ -10,6 +10,7 @@ class BotConfig(commands.Cog):
         self.war_channel_id = 0
         self.boss_channel_id = 0
         self.stat_channel_id = 0
+        self._auto_reschedule_wars = True  # Default enabled
 
     @property
     def brigade(self) -> str:
@@ -40,6 +41,10 @@ class BotConfig(commands.Cog):
     def brigade(self, value):
         self._brigade = value
 
+    @property
+    def auto_reschedule_wars(self) -> bool:
+        return self._auto_reschedule_wars
+
     @boss_hunter_role_id.setter
     def boss_hunter_role_id(self, value):
         self._boss_hunter_role_id = int(value)
@@ -59,3 +64,7 @@ class BotConfig(commands.Cog):
     @stat_channel_id.setter
     def stat_channel_id(self, value):
         self._stat_channel_id = int(value)
+
+    @auto_reschedule_wars.setter
+    def auto_reschedule_wars(self, value: bool):
+        self._auto_reschedule_wars = value

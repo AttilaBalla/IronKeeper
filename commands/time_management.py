@@ -4,6 +4,7 @@ from discord.ext import commands
 from features.time_keeper import TimeKeeper
 from models.boss_timer import BossTimer
 from models.war_timer import WarTimer
+from config.constants import RECURRING_WAR_EVENTS
 from utilities.helpers import find_boss, output_boss_timer_data, output_event_timer_data, parse_event_date_time, parse_timer_args, validate_input_for_boss, find_event, calculate_notification_time
 
 
@@ -82,6 +83,7 @@ class TimeManagement(commands.Cog):
             return
         try:
             self.time_keeper.remove_timer(timer_id)
+            self.time_keeper.save_timer_state()
         except ValueError:
             await ctx.send('An error occurred: Command input contains invalid value, expecting `[id]`')
 
@@ -189,6 +191,28 @@ class TimeManagement(commands.Cog):
 
         if isinstance(timer, WarTimer):
             await channel.send(f"`{timer.name}` in 1h - <@&{bot_config.warrior_role_id}>! Event `{timer.name}` is starting in 1 hour!")
+            self.time_keeper.remove_timer(timer.id)
+
+            if bot_config.auto_reschedule_wars and timer.key in RECURRING_WAR_EVENTS:
+                # Reschedule for +5 days
+                new_timer = self.time_keeper.reschedule_war_event(timer, days=5)
+
+                # Send rescheduling notification
+                reschedule_datetime = new_timer.due_time
+                await channel.send(
+                    f"🔄 **Event `{timer.name}` has been rescheduled** for <t:{int(reschedule_datetime)}:f> (in 5 days)"
+                )
+
+                # Schedule notification for the new timer
+                self.bot.loop.create_task(
+                    self.dispatch_notification(new_timer, calculate_notification_time(new_timer))
+                )
+
+                # Save updated state
+                self.time_keeper.save_timer_state()
+
+                print(f"War event '{timer.name}' automatically rescheduled for +5 days")
+
             self.time_keeper.remove_timer(timer.id)
             return
 

@@ -108,6 +108,16 @@ time_keeper.save_timer_state()                   # Write to CSV
 - For other bosses: checks if any timer with same key exists (ignores territory).
 - Returns `True` if duplicate found; command rejects and tells user.
 
+### War Event Auto-Rescheduling
+  
+  When a war timer expires for configured recurring events (Akron, Rakion, Castle Corona), 
+  the bot automatically creates a new timer scheduled for exactly 5 days in the future.
+  
+  - **Config**: `BotConfig.auto_reschedule_wars` (boolean toggle)
+  - **Recurring events**: Defined in `RECURRING_WAR_EVENTS` constant
+  - **Admin commands**: `!toggle_war_reschedule` to enable/disable, `!show_recurring_wars` to view
+  - **Discord notifications**: Both expiration and rescheduling messages sent to war channel
+
 ---
 
 ## Stats Management System
@@ -359,7 +369,6 @@ def cog_unload(self):
 - **Timezone-agnostic**: Timestamps are Unix epoch; all times UTC. No local timezone handling.
 - **Stats API single-point-of-failure**: No retry logic; if API is down during Monday noon, update silently fails and users see nothing.
 - **Brigade name case-sensitive**: API filtering on `Guild == brigade` is case-sensitive; mismatch results in empty member list.
-- **Gear code mapping incomplete**: Unknown gear codes from API map to `None`; no fallback or error message to user.
 - **NationStats incomplete**: Cog loads but `update_stats()` is a no-op; scheduler runs but does nothing.
 
 

@@ -36,6 +36,8 @@ CSV_HEADERS_BRIG_STATS = [
     'fame_diff',
 ]
 
+RECURRING_WAR_EVENTS = ['akron', 'rakion', 'coro']
+
 events = [
     {
         "name": 'Akron',

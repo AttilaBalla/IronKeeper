@@ -50,6 +50,17 @@ class TimeKeeper:
 
         return False
 
+    def reschedule_war_event(self, expired_timer, days=5):
+        """Create a new war timer scheduled for N days after the previous one expired."""
+        new_due_time = expired_timer.due_time + (days * 86400)  # 86400 seconds = 1 day
+        new_event = {
+            'key': expired_timer.key,
+            'name': expired_timer.name,
+        }
+        new_timer = WarTimer(new_event, new_due_time)
+        self.add_timer(new_timer)
+        return new_timer
+
     def save_timer_state(self):
         print(f'Saving current timers to {self.persistence_path}')
         save_data_to_csv(self.timers, CSV_HEADERS_TIMERS, 'timers', self.persistence_path)
