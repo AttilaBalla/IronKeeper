@@ -190,7 +190,7 @@ class TimeManagement(commands.Cog):
         channel = self.bot.get_channel(channel_id)
 
         if isinstance(timer, WarTimer):
-            await channel.send(f"`{timer.name}` in 1h - <@&{bot_config.warrior_role_id}>! Event `{timer.name}` is starting in 1 hour!")
+            await channel.send(f"**`{timer.name}` in 1h - <@&{bot_config.warrior_role_id}>! Event `{timer.name}` is starting in 1 hour!**")
             self.time_keeper.remove_timer(timer.id)
 
             if bot_config.auto_reschedule_wars and timer.key in RECURRING_WAR_EVENTS:
@@ -200,7 +200,7 @@ class TimeManagement(commands.Cog):
                 # Send rescheduling notification
                 reschedule_datetime = new_timer.due_time
                 await channel.send(
-                    f"🔄 **Event `{timer.name}` has been rescheduled** for <t:{int(reschedule_datetime)}:f> (in 5 days)"
+                    f"Event `{timer.name}` has been rescheduled for <t:{int(reschedule_datetime)}:f> (in 5 days)"
                 )
 
                 # Schedule notification for the new timer

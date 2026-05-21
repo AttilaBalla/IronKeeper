@@ -3,6 +3,8 @@ from datetime import datetime
 from discord.ext import commands
 from config.constants import admins, bosses, events, Territories
 from models.boss_timer import BossTimer
+from models.brig_member import BrigMember
+from models.brigade import Brigade
 from models.war_timer import WarTimer
 
 class NotBotOwner(commands.CheckFailure):
@@ -51,7 +53,7 @@ def validate_input_for_boss(boss, territory):
 def output_boss_timer_data(timer_data):
     if isinstance(timer_data, list):
         return f"".join(
-            f"`[{timer.id}]` {timer.name} {timer.territory if timer.territory else ""}\n"
+            f"`[{timer.id}]` **{timer.name} {timer.territory if timer.territory else ""}\n**"
             f"spawns <t:{timer.due_time}:R>\n"
             f"on <t:{timer.due_time}:f>\n"
             f"\n"
@@ -59,7 +61,7 @@ def output_boss_timer_data(timer_data):
             for timer in list(filter(lambda timer: isinstance(timer, BossTimer), timer_data)))
     else:
         return (
-            f"`[{timer_data.id}]` {timer_data.name} {timer_data.territory if timer_data.territory else ""}\n"
+            f"`[{timer_data.id}]` **{timer_data.name} {timer_data.territory if timer_data.territory else ""}**\n"
             f"started: <t:{timer_data.start_time}:f>\n"
             f"spawns: <t:{timer_data.due_time}:f>\n"
             f"<t:{timer_data.due_time}:R>\n"
@@ -105,7 +107,7 @@ def create_members_table(member_data):
 
     return table
 
-def calculate_member_fame_diff(current, previous):
+def calculate_member_fame_diff(current: list[BrigMember], previous: list[BrigMember]) -> list[BrigMember]:
     """
     Compute fame differences for a list of BrigMember instances.
 
@@ -120,7 +122,7 @@ def calculate_member_fame_diff(current, previous):
         return current
 
     # Build a lookup by normalized name for previous members
-    prev_map = {}
+    prev_map: dict[str, BrigMember] = {}
     for p in previous:
         key = str(p.name).strip().lower()
         prev_map[key] = p
@@ -137,22 +139,17 @@ def calculate_member_fame_diff(current, previous):
 
     return current
 
-def calculate_brig_fame_diff(current, previous):
+def calculate_brig_fame_diff(current: list[Brigade], previous: list[Brigade]) -> list[Brigade]:
     """
     Compute fame differences for a list of Brigade instances.
-
     - `current` and `previous` are lists of `Brigade` objects.
-    - For each brigade in `current`, set `brigade.fame_diff` to:
-        current.total_fames - previous.total_fames (if a previous brigade with the same name exists)
-        otherwise: 0 (default)
-    - Matching is done on `brigade.name`.
     - Returns the `current` list sorted by monthly_fame descending (with fame_diff set).
     """
     if len(previous) == 0:
         return sorted(current, key=lambda b: b.monthly_fame, reverse=True)
 
     # Build a lookup by name for previous brigades
-    prev_map = {}
+    prev_map: dict[str, Brigade] = {}
     for p in previous:
         prev_map[p.name] = p
 
@@ -160,7 +157,7 @@ def calculate_brig_fame_diff(current, previous):
     for c in current:
         prev = prev_map.get(c.name)
         if prev is not None:
-            c.fame_diff = int(c.total_fame) - int(prev.total_fames)
+            c.fame_diff = int(c.total_fame) - int(prev.total_fame)
 
     # Sort by monthly_fame descending
     return sorted(current, key=lambda b: b.monthly_fame, reverse=True)
